@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>نقشه اتصال دامنه و DNS</title>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f6f5f1;--sf:#fff;--tx:#1f2328;--mu:#6b7078;--bd:#d9d6cc;--c0:#6b5bd2;--c1:#1d7fb8;--c2:#2a9d6f;--c3:#c4861a;--c4:#c8384a;--ln:#b8b4a6;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17181b;--sf:#222428;--tx:#ececec;--mu:#9a9ea6;--bd:#3a3d44;--c0:#9b8cf5;--c1:#5db6ea;--c2:#5fd3a0;--c3:#e9b24f;--c4:#f0707f;--ln:#555964}}
+:root[data-theme="dark"]{--bg:#17181b;--sf:#222428;--tx:#ececec;--mu:#9a9ea6;--bd:#3a3d44;--c0:#9b8cf5;--c1:#5db6ea;--c2:#5fd3a0;--c3:#e9b24f;--c4:#f0707f;--ln:#555964}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:'Vazirmatn',Tahoma,sans-serif;line-height:1.8}
+header{padding:20px 24px 4px}h1{margin:0;font-size:22px;font-weight:800}
+header p{margin:4px 0 0;color:var(--mu);font-size:14px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;padding:8px 24px;font-size:13px;color:var(--mu)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-left:5px}
+.scroll{overflow-x:auto;padding:8px 16px 40px}
+#map{position:relative;min-width:1180px;display:grid;grid-template-columns:repeat(5,1fr);gap:0 56px;padding:8px 8px}
+.col{display:flex;flex-direction:column;gap:12px;justify-content:space-around;position:relative;z-index:2}
+.col h3{margin:0 0 4px;font-size:13px;font-weight:600;color:var(--mu);text-align:center;border-bottom:2px solid var(--bd);padding-bottom:6px}
+svg#lines{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none}
+svg path{fill:none;stroke:var(--ln);stroke-width:1.4;opacity:.45;transition:.2s}
+svg path.p{stroke:var(--c4);stroke-dasharray:5 4;opacity:0}
+svg path.on{stroke-width:2.6;opacity:1;stroke:var(--ac)}
+svg path.p.on{stroke:var(--c4)}
+.n{background:var(--sf);border:1.5px solid var(--bd);border-right:5px solid var(--ac);border-radius:10px;padding:8px 12px;font:inherit;font-size:13.5px;color:var(--tx);text-align:right;cursor:pointer;transition:.2s}
+.n:hover,.n:focus-visible{transform:translateY(-2px);box-shadow:0 4px 14px rgba(0,0,0,.15);outline:none}
+.n small{display:block;color:var(--mu);font-size:11.5px}
+.n.dim{opacity:.28}.n.sel{background:var(--ac);color:#fff}.n.sel small{color:#fff;opacity:.85}
+#ov{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:9;padding:16px}
+#ov.show{display:flex}
+#pop{background:var(--sf);border-radius:16px;max-width:560px;width:100%;max-height:85vh;overflow:auto;padding:22px 24px;border-top:6px solid var(--ac);box-shadow:0 20px 60px rgba(0,0,0,.4)}
+#pop h2{margin:0 0 2px;font-size:19px}
+.tag{display:inline-block;font-size:12px;padding:1px 10px;border-radius:20px;background:var(--ac);color:#fff;margin-bottom:8px}
+#pop p{margin:6px 0;font-size:14.5px}#pop h4{margin:14px 0 4px;font-size:13px;color:var(--mu)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--bd);background:var(--bg);color:var(--tx);border-radius:20px;padding:2px 12px;font:inherit;font-size:12.5px;cursor:pointer}
+.tk{direction:ltr;text-align:left;font-size:12px;color:var(--mu);word-break:break-all}
+.sol{background:var(--bg);border-radius:10px;padding:8px 12px;font-size:13.5px;margin:4px 0}
+#x{float:left;border:0;background:var(--bg);color:var(--tx);width:32px;height:32px;border-radius:50%;font-size:18px;cursor:pointer}
+</style>
+</head>
+<body>
+<header><h1>نقشه اتصال دامنه: محصولات، مدیریت DNS و روش‌های اتصال</h1>
+<p>روی هر کارت کلیک کنید تا مسیر آن روشن شود و توضیح کامل باز شود. مشکل‌ها با خط‌چین قرمز به گره‌های درگیر وصل می‌شوند.</p></header>
+<div class="legend"><span><i style="background:var(--c0)"></i>نوع دامنه</span><span><i style="background:var(--c1)"></i>سرویس</span><span><i style="background:var(--c2)"></i>روش اتصال</span><span><i style="background:var(--c3)"></i>محل مدیریت رکورد</span><span><i style="background:var(--c4)"></i>مشکل</span></div>
+<div class="scroll"><div id="map"><svg id="lines"></svg></div></div>
+<div id="ov"><div id="pop" role="dialog" aria-modal="true"><button id="x" aria-label="بستن">×</button><div id="pc"></div></div></div>
+<script>
+const H=['نوع دامنه','سرویس','روش اتصال','محل مدیریت رکورد','مشکلات'];
+const N={
+root:[0,'دامنه اصلی (@)','Root / Apex','قاعده کلی: هر دامنه فقط یک مدیر DNS دارد. روی CDN می‌توان CNAME یا A گذاشت (با حذف رکورد A متداخل)، اما روی DNS خارجی بدون CNAME Flattening فقط رکورد A ممکن است.'],
+sub:[0,'زیردامنه','Subdomain','برای زیردامنه، CNAME برای هاست ابری و NS برای هاست دانلود و فضای ابری به کار می‌رود. در تیکت‌های ذخیره‌سازی، هدف واقعی کاربر همیشه زیردامنه بود (مثل media یا s3).'],
+host:[1,'هاست ابری','Cloud Host','کاربر یا چهار نیم‌سرور پلتفرم را برای واگذاری DNS تنظیم می‌کند، یا DNS بیرونی خود را نگه می‌دارد و @ را با رکورد A به IP هاست متصل می‌کند. برای زیردامنه‌ها CNAME اختصاصی وجود دارد (به دلیل احتمال تغییر IP). برای استفاده از CNAME باید ابتدا رکورد A حذف شود. در پنل، تفاوت روش نیم‌سرور با روش رکورد DNS در نگاه اول مشخص نیست.'],
+dl:[1,'هاست دانلود','Download Host','مستندات می‌گوید برای زیردامنه دو رکورد NS در محل میزبانی DNS دامنه تعریف شود. به دلیل نبود ویرایشگر مستقل DNS، روی دامنه اصلی مناسب نیست.'],
+obj:[1,'فضای ابری','Object Storage','چهار رکورد NS برای زیردامنه در Zone دامنه تعریف می‌شود؛ بدون نیاز به تغییر IP و بدون تغییر نیم‌سرورهای کل دامنه. جایگزین: CNAME به نام پیش‌فرض باکت در CDN (با حذف رکورد A قبلی)، اما NS به دلیل پایداری ترجیح دارد.'],
+cdn:[1,'CDN','CDN','وقتی نیم‌سرورهای CDN فعال باشند، پنل CDN ویرایشگر رسمی Zone است. کاربر همین‌جا رکوردهای واگذاری زیردامنه (به هاست دانلود یا استوریج) و رکوردهای CNAME و A را مدیریت می‌کند. ساخت CNAME روی @ ممکن است ولی نیاز به حذف دستی رکورد A قبلی دارد.'],
+paas:[1,'PaaS','PaaS','فاقد نیم‌سرور اختصاصی است و هر اپلیکیشن یک Endpoint پویا دارد؛ پس اتصال فقط با CNAME انجام می‌شود. بزرگ‌ترین چالش: نبود راهنما یا مقدار پیش‌فرض در فرم؛ کاربر بدون مستندات بیرونی نمی‌داند چه مقداری وارد کند.'],
+m_ns:[2,'واگذاری کل دامنه (نیم‌سرور)','Full Delegation (۴ نیم‌سرور در هاست ابری)','نیم‌سرورهای کل دامنه در رجیسترار روی پلتفرم (هاست ابری یا CDN) تنظیم می‌شود و پنل همان سرویس، ویرایشگر Zone می‌شود. هشدار: اگر نیم‌سرور کل دامنه مستقیم به هاست دانلود یا استوریج داده شود، رکوردهای MX و TXT و سایر زیردامنه‌ها قابل تعریف نیست و دامنه قفل می‌شود.'],
+m_a:[2,'رکورد A','A Record','اتصال @ به IP. روی DNS خارجی بدون CNAME Flattening تنها گزینه برای دامنه اصلی است. ضعف: با تغییر IP باید دستی بروزرسانی شود. در CDN، رکورد A اجباری آنبوردینگ با CNAME تداخل دارد.'],
+m_c:[2,'رکورد CNAME','CNAME','برای زیردامنه‌ی هاست ابری پیشنهاد می‌شود (پوشش تغییر IP). روی ریشه در پنل CDN ممکن است ولی با رکورد A هم‌زمان تداخل دارد و باید A قبلی حذف شود.'],
+m_s2:[2,'واگذاری زیردامنه (۲ NS)','Sub-delegation (Download Host)','دو رکورد NS برای زیردامنه در جایی که DNS دامنه میزبانی می‌شود (هاست ابری، CDN یا ارائه‌دهنده بیرونی). کاربران گاهی آن را با تغییر نیم‌سرور اصلی اشتباه می‌گیرند.'],
+m_s4:[2,'واگذاری زیردامنه (۴ NS)','Sub-delegation (Object Storage)','چهار رکورد NS اختصاصی برای زیردامنه در Zone دامنه، بدون نیاز به تغییر IP و بدون تغییر نیم‌سرور کل دامنه.'],
+m_cb:[2,'CNAME به باکت پیش‌فرض','Bucket CNAME','جایگزین NS برای فضای ابری. نیازمند حذف رکورد A قبلی است و به دلیل پایداری کمتر، NS ترجیح داده می‌شود.'],
+m_ce:[2,'CNAME به Endpoint اپ','App Endpoint CNAME','CNAME مستقیم به Endpoint پویای برنامه، روی ریشه (با شرط حذف رکورد A پیش‌فرض در پنل CDN یا هاست ابری) یا روی زیردامنه (بدون تداخل).'],
+m_no:[2,'مشخص نیست','Not specified in panel','در پنل، روشی غیر از نیم‌سرور برای اتصال مشخص نشده است و معلوم نیست دامنه اصلی چگونه باید به این سرویس وصل شود. در هاست دانلود به دلیل نبود ویرایشگر DNS و در فضای ابری به دلیل نبود راهنمای اتصال مستقیم، کاربر مسیر مشخصی نمی‌بیند.'],
+z_host:[3,'پنل هاست ابری','Editor #1','تا وقتی نیم‌سرورهای هاست ابری فعال است، کاربر در این پنل رکوردها را می‌بیند و ویرایش می‌کند.'],
+z_cdn:[3,'پنل CDN','Editor #2','تا وقتی نیم‌سرورهای CDN فعال است، ویرایشگر رسمی Zone است. پیامد: برخی کاربران CDN را فقط به‌عنوان DNS Manager می‌خرند.'],
+z_hid:[3,'Zone پنهان و مدیریت‌شده','Hidden Zone','هاست دانلود و ذخیره‌سازی آبجکت رکوردها را در Zone پنهان می‌سازند و ویرایشگر ندارند؛ بنابراین نیم‌سرور فقط برای زیردامنه باید ساخته شود، نه دامنه اصلی.'],
+z_ext:[3,'DNS بیرونی','External DNS','اگر دامنه روی DNS خارجی باشد، رکوردها همان‌جا مدیریت می‌شود. بدون CNAME Flattening روی ریشه فقط A ممکن است.'],
+p1:[4,'نبود DNS Editor یکپارچه','مشکل ۱','ویرایشگر رکورد فقط در پنل CDN و هاست ابری وجود دارد. اگر کاربر فقط هاست دانلود، استوریج یا اپ بخرد، جایی برای مدیریت رکورد ندارد و باید CDN بخرد. بخش دامنه هم مدیریت رکورد ندارد. پیامد جدی: قفل شدن رکوردهای Apex (MX، TXT و ...) در هاست دانلود و استوریج.','76319630, 61159589, 90516073, 15476621, 77254410, 22393611, 89521882, 66199210, 63093865, 87816874, 15523314, 54360825, 37803451, 59727272, 79804671, 41373939, 57870266, 11807331, 52503537, 56511608','ارائه ویرایشگر DNS یکپارچه یا مسیر شفاف‌تر برای مدیریت رکوردها.'],
+p2:[4,'خطای تداخل رکورد A و CNAME','مشکل ۲','روی ریشه به‌طور پیش‌فرض رکورد A وجود دارد و پنل خطای تداخل را با پیام عمومی نشان می‌دهد («رکورد با این مقدار وجود دارد» در CDN، «رکورد نامعتبر است» در هاست). کاربر نمی‌فهمد علت، رکورد A است. در خرید CDN هم CNAME روی روت مجاز است ولی با A اجباریِ غیرقابل‌حذف نمی‌توان به مرحله بعد رفت.','82136742, 45310245','پاپ‌آپ تاییدیه: «ثبت CNAME نیازمند حذف رکورد A فعلی است؛ آیا سیستم خودکار انجام دهد؟» یا حداقل ارور شفاف‌تر.'],
+p3:[4,'اجبار رکورد A در آنبوردینگ CDN','مشکل ۳','کاربرانی که CDN را فقط برای DNS Manager رایگان می‌خرند، مجبور به ثبت IP و رکورد A ساختگی‌اند و سپس برای PaaS یا ایمیل باید آن را دستی حذف کنند. حالت DNS only قابل‌ردشدن نیست.','66294567, 70375759, 21570375','امکان Skip یا حذف رکوردهای اجباری قبل از خرید؛ راهنمایی برای وارد کردن IP origin؛ اجباری نبودن برای استفاده صرفاً DNS.'],
+p4:[4,'راهنمایی ناکافی در فرم‌ها','مشکل ۴','فرم‌ها ریشه و زیردامنه را تشخیص نمی‌دهند، مقادیر (Endpoint، نیم‌سرور) را نشان نمی‌دهند، تفاوت روش نیم‌سرور و رکورد در هاست مشخص نیست و کاربران ساخت NS زیردامنه را با تغییر نیم‌سرور اصلی اشتباه می‌گیرند. در یک نمونه، افزودن و حذف دامنه اصلی در استوریج رکورد ریشه را پاک و سایت را از دسترس خارج کرد.','(تیکت‌های هاست) 33234519, 64719335, 88507115, 74028226, 13158055, 66890512, 32075051, 28799814, 65284644, 11978485, 82140623, 57161571, 65536509, 12614776','فرم پویا با تشخیص خودکار ریشه/زیردامنه و نمایش فقط گزینه‌های معتبر؛ نمایش مقادیر با دکمه Copy (In-line Helper)؛ اعلام اینکه با داشتن DNS Provider در هاست نیازی به تغییر نیم‌سرور نیست.'],
+p5:[4,'شکست احراز TXT در استوریج','مشکل ۵','برای اثبات مالکیت دامنه به رکورد TXT نیاز است. اگر کاربر پیش از تکمیل تاییدیه، نیم‌سرورهای کل دامنه را تغییر دهد، نیم‌سرورهای استوریج به TXT پاسخ نمی‌دهند و DNS قبلی هم از دسترس خارج است؛ احراز هویت قفل و کاربر در بن‌بست می‌ماند (ادج‌کیس فوق‌بحرانی).','','هشدار صریح پیش از تغییر نیم‌سرور و ترجیح روش NS زیردامنه.'],
+
+};
+Object.assign(N,{
+p6:[4,'مشخص نبودن روش غیر از نیم‌سرور','مشکل ۶','در پنل، روشی غیر از نیم‌سرور (ثبت رکورد A یا CNAME) برای اتصال مشخص نشده است. در هاست، تفاوت روش نیم‌سرور و استفاده از رکوردهای DNS در نگاه اول معلوم نیست. در هاست دانلود و فضای ابری هم مستندات فقط NS را می‌گوید و پنل افزودن دامنه اصلی را بدون توضیح تفاوت‌ها نشان می‌دهد؛ بعضی کاربران هم اصلاً تمایلی به روش نیم‌سرور ندارند ولی راه دیگری نمی‌بینند.','','در فرم، برای سرویس‌هایی مثل هاست نشان داده شود که اگر کاربر DNS Provider دارد، نیازی به تغییر نیم‌سرور نیست و می‌تواند با ساخت رکورد وصل کند.'],
+p7:[4,'ترس و اشتباه در ثبت نیم‌سرور زیردامنه','مشکل ۷','کاربران می‌ترسند تغییر نیم‌سرور برای زیردامنه به کل دامنه یا سایت آسیب بزند. بعضی هم نیم‌سرور را در جای اشتباه وارد می‌کنند، مثلاً در بخش نیم‌سرورهای خود دامنه به جای ساخت رکورد NS برای زیردامنه، و ساخت NS زیردامنه را با تغییر نیم‌سرور اصلی اشتباه می‌گیرند.','','تفکیک خودکار ریشه از زیردامنه در فرم و نمایش دقیق مقادیر و محل ثبت NS با دکمه Copy (از راهکارهای متن). همچنین توضیح اینکه NS زیردامنه روی بقیه دامنه اثر ندارد (پیشنهاد من، در متن نبود).']
+});
+const E=[['root','host'],['sub','host'],['root','dl'],['sub','dl'],['root','obj'],['sub','obj'],['root','cdn'],['sub','cdn'],['root','paas'],['sub','paas'],
+['host','m_ns'],['host','m_a'],['host','m_c'],['dl','m_s2'],['dl','m_no'],['obj','m_s4'],['obj','m_cb'],['obj','m_no'],['cdn','m_ns'],['cdn','m_a'],['cdn','m_c'],['paas','m_ce'],
+['m_ns','z_host'],['m_ns','z_cdn'],['m_a','z_ext'],['m_a','z_host'],['m_a','z_cdn'],['m_c','z_host'],['m_c','z_cdn'],['m_c','z_ext'],['m_s2','z_hid'],['m_s2','z_host'],['m_s2','z_cdn'],['m_s2','z_ext'],['m_s4','z_hid'],['m_s4','z_cdn'],['m_cb','z_cdn'],['m_ce','z_cdn'],['m_ce','z_host']];
+const P=[['p1','dl'],['p1','obj'],['p1','paas'],['p1','z_hid'],['p1','m_ns'],['p2','m_c'],['p2','m_a'],['p2','cdn'],['p2','host'],['p3','cdn'],['p3','paas'],['p3','m_a'],['p4','root'],['p4','sub'],['p4','dl'],['p4','host'],['p4','obj'],['p5','obj'],['p5','m_ns'],['p6','host'],['p6','dl'],['p6','obj'],['p6','m_no'],['p6','m_a'],['p6','m_c'],['p7','sub'],['p7','dl'],['p7','obj'],['p7','m_s2'],['p7','m_s4'],['p7','m_ns'],['p7','z_hid']];
+const map=document.getElementById('map'),svg=document.getElementById('lines'),el={};
+const acc=['--c0','--c1','--c2','--c3','--c4'];
+H.forEach((h,i)=>{const c=document.createElement('div');c.className='col';c.id='c'+i;c.style.setProperty('--ac','var('+acc[i]+')');c.innerHTML='<h3>'+h+'</h3>';map.appendChild(c)});
+for(const id in N){const[n,t,s]=N[id],b=document.createElement('button');b.className='n';b.style.setProperty('--ac','var('+acc[n]+')');b.innerHTML=t+'<small>'+s+'</small>';b.onclick=()=>pick(id);document.getElementById('c'+n).appendChild(b);el[id]=b}
+const paths=[];
+function draw(){svg.innerHTML='';paths.length=0;const m=map.getBoundingClientRect();
+[...E.map(e=>[...e,0]),...P.map(e=>[...e,1])].forEach(([a,b,p])=>{const A=el[a].getBoundingClientRect(),B=el[b].getBoundingClientRect();
+const left=A.left+A.width/2>B.left+B.width/2;const x1=(left?A.left:A.right)-m.left,x2=(left?B.right:B.left)-m.left,y1=A.top+A.height/2-m.top,y2=B.top+B.height/2-m.top,d=(x2-x1)/2;
+const q=document.createElementNS('http://www.w3.org/2000/svg','path');q.setAttribute('d',`M${x1},${y1} C${x1+d},${y1} ${x2-d},${y2} ${x2},${y2}`);
+q.style.setProperty('--ac',getComputedStyle(el[b].parentNode).getPropertyValue('--ac'));if(p)q.classList.add('p');svg.appendChild(q);paths.push({q,a,b,p})})}
+let cur=null;
+function link(id){const s=new Set([id]);const adj=p=>{const r=[];E.forEach(([a,b])=>{r.push([a,b])});return r};
+const up=[id],dn=[id];while(up.length){const x=up.pop();E.forEach(([a,b])=>{if(b===x&&!s.has(a)){s.add(a);up.push(a)}})}
+while(dn.length){const x=dn.pop();E.forEach(([a,b])=>{if(a===x&&!s.has(b)){s.add(b);dn.push(b)}})}
+if(id[0]==='p')P.forEach(([a,b])=>{if(a===id)s.add(b)});else P.forEach(([a,b])=>{if(b===id)s.add(a)});return s}
+function pick(id){cur=id;const s=link(id);
+for(const k in el){el[k].classList.toggle('dim',!s.has(k));el[k].classList.toggle('sel',k===id)}
+paths.forEach(({q,a,b,p})=>q.classList.toggle('on',s.has(a)&&s.has(b)&&(p?(a===id||b===id):true)));
+const [n,t,s2,d,tk,sol]=N[id];document.getElementById('pop').style.setProperty('--ac','var('+acc[n]+')');
+let h='<span class="tag">'+H[n]+'</span><h2>'+t+'</h2><p>'+d+'</p>';
+if(sol)h+='<h4>راهکار پیشنهادی</h4><div class="sol">'+sol+'</div>';
+if(tk)h+='<h4>نمونه تیکت‌ها</h4><div class="tk">'+tk+'</div>';
+const rel=[...s].filter(k=>k!==id);if(rel.length)h+='<h4>گره‌های مرتبط</h4><div class="chips">'+rel.map(k=>'<button class="chip" onclick="pick(\''+k+'\')">'+N[k][1]+'</button>').join('')+'</div>';
+document.getElementById('pc').innerHTML=h;document.getElementById('ov').classList.add('show')}
+function close_(){document.getElementById('ov').classList.remove('show')}
+document.getElementById('x').onclick=close_;
+document.getElementById('ov').onclick=e=>{if(e.target.id==='ov')close_()};
+document.addEventListener('keydown',e=>{if(e.key==='Escape')close_()});
+map.addEventListener('dblclick',()=>{});
+document.querySelector('.scroll').addEventListener('click',e=>{if(e.target===map||e.target.classList.contains('col')){for(const k in el)el[k].classList.remove('dim','sel');paths.forEach(x=>x.q.classList.remove('on'))}});
+document.fonts&&document.fonts.ready.then(draw);addEventListener('resize',draw);draw();
+</script>
+</body>
+</html>
